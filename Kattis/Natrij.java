@@ -61,3 +61,4 @@ public class Natrij {
         }
         else System.out.println("24:00:00");
     }
+}
