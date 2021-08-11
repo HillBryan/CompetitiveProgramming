@@ -13,7 +13,6 @@ public class JustPassingThrough {
         
         int[][] map = new int[r][c];
         int[][] passes = new int[r][c];
-        
         long[][][] memoMin = new long[r][c][n + 1];
         long min = Integer.MAX_VALUE;
         
@@ -48,9 +47,7 @@ public class JustPassingThrough {
     public static long dfs(int[][] map, long[][][] memoMin, int[][] passMemo, int r, int c, int n, int passes) {
         
         // Base Cases
-        if (r < 0 || r >= map.length || c < 0 || c >= map[0].length) return Integer.MAX_VALUE;
-        
-        if (map[r][c] == -1) return Integer.MAX_VALUE;
+        if (r < 0 || r >= map.length || c < 0 || c >= map[0].length || map[r][c] == -1) return Integer.MAX_VALUE;
         
         passes += passMemo[r][c];
         
