@@ -1,6 +1,9 @@
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class JustPassingThrough {
+    
+    private final static int INFINITY = 500001;
     
     public static void main(String[] args) {
         
@@ -13,71 +16,57 @@ public class JustPassingThrough {
         
         int[][] map = new int[r][c];
         int[][] passes = new int[r][c];
-        long[][][] memoMin = new long[r][c][n + 1];
-        long min = Integer.MAX_VALUE;
+        int[][][] memo = new int[r][c][n + 1];
+        int min = INFINITY;
         
         // Taking input and setting memo table to infinity
         for (int i = 0; i < r; i++) {
             for (int j = 0; j < c; j++) {
                 map[i][j] = scan.nextInt();
-                for (int k = 0; k < n + 1; k++) {
-                    memoMin[i][j][k] = Integer.MAX_VALUE;
-                } 
+                Arrays.fill(memo[i][j], INFINITY);
             }
         }
         
         // Preprocessing: Pass table
-        for (int i = 0; i < r; i++) {
-            for (int j = 0; j < c; j++) {
+        for (int i = 1; i < r - 1; i++) {
+            for (int j = 1; j < c - 1; j++) {
                 passes[i][j] = isPass(map, i, j);
             }
         }
         
         // Top down dp
         for (int i = 0; i < r; i++) {
-            if (map[i][0] != -1) {
-                min = Math.min(min, dfs(map, memoMin, passes, i, 0, n, 0));
-            }
+            min = map[i][0] != -1 ? Math.min(min, dfs(map, memo, passes, i, 0, n)) : min;
         }
         
-        if (min >= Integer.MAX_VALUE) System.out.println("impossible");
-        else System.out.println(min);
+        System.out.println(min >= INFINITY ? "impossible" : min);
     }
     
-    public static long dfs(int[][] map, long[][][] memoMin, int[][] passMemo, int r, int c, int n, int passes) {
+    public static int dfs(int[][] map, int[][][] memo, int[][] passTable, int r, int c, int n) {
         
         // Base Cases
-        if (r < 0 || r >= map.length || c < 0 || c >= map[0].length || map[r][c] == -1) return Integer.MAX_VALUE;
+        if (map[r][c] == -1 || n < 0) return INFINITY;
         
-        passes += passMemo[r][c];
-        
-        if (passes > n) return Integer.MAX_VALUE;
-        
-        // We get to end
+        // Column is at West edge
         if (c == map[0].length - 1) {
-            if (passes == n) return memoMin[r][c][passes] = map[r][c];
-            else return Integer.MAX_VALUE;
+            if (n == 0) return memo[r][c][n] = map[r][c];
+            else return INFINITY;
         }
         
-        // Found in memo
-        if (memoMin[r][c][passes] != Integer.MAX_VALUE) return memoMin[r][c][passes];
+        // Found in memo table
+        if (memo[r][c][n] != INFINITY) return memo[r][c][n];
         
         // Dfs step
-        long east = dfs(map, memoMin, passMemo, r, c + 1, n, passes) + map[r][c];
-        long nEast = dfs(map, memoMin, passMemo, r - 1, c + 1, n, passes) + map[r][c];
-        long sEast = dfs(map, memoMin, passMemo, r + 1, c + 1, n, passes) + map[r][c];
+        int east = c + 1 < map[0].length ? dfs(map, memo, passTable, r, c + 1, n - passTable[r][c + 1]) + map[r][c] : INFINITY;
+        int nEast = c + 1 < map[0].length && r - 1 > -1 ? dfs(map, memo, passTable, r - 1, c + 1, n - passTable[r - 1][c + 1]) + map[r][c] : INFINITY;
+        int sEast = c + 1 < map[0].length && r + 1 < map.length ? dfs(map, memo, passTable, r + 1, c + 1, n - passTable[r + 1][c + 1]) + map[r][c] : INFINITY;
         
-        return memoMin[r][c][passes] = Math.min(east, Math.min(nEast, sEast));
+        return memo[r][c][n] = Math.min(east, Math.min(nEast, sEast));
     }
     
     public static int isPass(int[][] map, int r, int c) {
-        
-        if (r - 1 < 0 || r + 1 >= map.length || c - 1 < 0 || c + 1 >= map[0].length || map[r][c] == -1) return 0;
-        
         if (map[r - 1][c] == -1 || map[r + 1][c] == -1 || map[r][c - 1] == -1 || map[r][c + 1] == -1) return 0;
-        
         if (map[r][c] < map[r - 1][c] && map[r][c] < map[r + 1][c] && map[r][c] > map[r][c - 1] && map[r][c] > map[r][c + 1]) return 1;
-        
         return 0;
     }
 }
